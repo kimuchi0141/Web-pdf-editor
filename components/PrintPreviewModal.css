@@ -1,0 +1,145 @@
+.print-preview-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+    animation: previewFadeIn 0.2s ease-out;
+}
+
+@keyframes previewFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.print-preview-dialog {
+    background: #ffffff;
+    width: 92vw;
+    max-width: 1100px;
+    height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: previewScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes previewScaleUp {
+    from { transform: scale(0.97); }
+    to { transform: scale(1); }
+}
+
+.print-preview-header {
+    height: 52px;
+    background: #1e293b;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+    border-bottom: 1px solid #334155;
+}
+
+.print-preview-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.print-preview-icon {
+    font-size: 18px;
+}
+
+.print-preview-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.print-btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease, transform 0.05s ease;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+
+.print-btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.print-btn-primary:active {
+    transform: scale(0.98);
+}
+
+.print-btn-secondary {
+    background: #334155;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.print-btn-secondary:hover {
+    background: #475569;
+    color: #ffffff;
+}
+
+.print-btn-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 18px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+    margin-left: 4px;
+}
+
+.print-btn-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.print-preview-body {
+    flex: 1;
+    background: #525659;
+    overflow: hidden;
+    position: relative;
+}
+
+.print-preview-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}

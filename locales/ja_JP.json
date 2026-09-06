@@ -1,0 +1,105 @@
+{
+  "attachment": {
+    "clickToDownload": "クリックしてダウンロード",
+    "noAttachment": "添付ファイルはありません"
+  },
+  "bookmark": {
+    "noBookmark": "しおりはありません"
+  },
+  "core": {
+    "askingPassword": {
+      "requirePasswordToOpen": "この文書を開くにはパスワードが必要です",
+      "submit": "送信"
+    },
+    "wrongPassword": {
+      "tryAgain": "パスワードが正しくありません。もう一度お試しください"
+    },
+    "pageLabel": "ページ {{pageIndex}}"
+  },
+  "defaultLayout": {
+    "thumbnail": "ページサムネイル",
+    "bookmark": "しおり",
+    "attachment": "添付ファイル"
+  },
+  "fullScreen": {
+    "enterFullScreen": "全画面表示",
+    "exitFullScreen": "全画面表示を終了"
+  },
+  "download": {
+    "download": "ダウンロード"
+  },
+  "open": {
+    "openFile": "ファイルを開く"
+  },
+  "pageNavigation": {
+    "enterPageNumber": "ページ番号を入力",
+    "goToFirstPage": "最初のページへ移動",
+    "goToLastPage": "最後のページへ移動",
+    "goToNextPage": "次のページ",
+    "goToPreviousPage": "前のページ"
+  },
+  "print": {
+    "print": "印刷",
+    "disallowPrint": "このドキュメントは印刷が許可されていません",
+    "close": "閉じる",
+    "preparingDocument": "ドキュメントを準備中...",
+    "cancel": "キャンセル"
+  },
+  "properties": {
+    "fileName": "ファイル名",
+    "fileSize": "ファイルサイズ",
+    "title": "タイトル",
+    "author": "作成者",
+    "subject": "件名",
+    "keywords": "キーワード",
+    "creator": "アプリケーション",
+    "creationDate": "作成日時",
+    "modificationDate": "更新日時",
+    "pdfProducer": "PDF変換ソフト",
+    "pdfVersion": "PDFバージョン",
+    "pageCount": "ページ数",
+    "close": "閉じる",
+    "showProperties": "文書のプロパティ..."
+  },
+  "rotate": {
+    "rotateBackward": "反時計回りに回転",
+    "rotateForward": "時計回りに回転"
+  },
+  "scrollMode": {
+    "horizontalScrolling": "横スクロール",
+    "pageScrolling": "ページスクロール",
+    "wrappedScrolling": "折り返しスクロール",
+    "verticalScrolling": "縦スクロール",
+    "dualPage": "見開きページ",
+    "dualPageCover": "表紙付き見開き",
+    "singlePage": "単一ページ"
+  },
+  "search": {
+    "enterToSearch": "キーワードを入力して検索",
+    "previousMatch": "前のマッチ",
+    "nextMatch": "次のマッチ",
+    "close": "閉じる",
+    "matchCase": "大文字と小文字を区別",
+    "wholeWords": "単語単位",
+    "search": "検索"
+  },
+  "selectionMode": {
+    "handTool": "手のひらツール",
+    "textSelectionTool": "テキスト選択ツール"
+  },
+  "thumbnail": {
+    "thumbnailLabel": "ページ {{pageIndex}} のサムネイル"
+  },
+  "toolbar": {
+    "moreActions": "その他の操作"
+  },
+  "zoom": {
+    "actualSize": "実際のサイズ",
+    "pageFit": "ページに合わせる",
+    "pageWidth": "ページの幅に合わせる",
+    "zoomDocument": "ズーム",
+    "zoomIn": "拡大",
+    "zoomOut": "縮小"
+  }
+}
+
