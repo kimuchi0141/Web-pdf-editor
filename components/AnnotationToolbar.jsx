@@ -43,7 +43,7 @@ const HIGHLIGHT_COLORS = [
     { label: '桃', value: 'rgba(236, 72, 153, 0.4)' }
 ];
 
-export function AnnotationToolbar({ onSavePdf, isSaving }) {
+export function AnnotationToolbar({ onSavePdf, isSaving, onOpenFile }) {
     const { 
         currentTool, setCurrentTool, 
         textProperties, setTextProperties,
@@ -250,10 +250,22 @@ export function AnnotationToolbar({ onSavePdf, isSaving }) {
                 </div>
             )}
 
-            {/* PDF保存・ダウンロードボタン */}
-            {onSavePdf && (
-                <div className="tool-save-container">
+            {/* ファイルを開く & 保存ボタン */}
+            <div className="tool-save-container">
+                {onOpenFile && (
                     <button 
+                        type="button"
+                        className="tool-btn-open"
+                        onClick={(e) => { e.stopPropagation(); onOpenFile(); }}
+                        title="お手持ちのPDFファイルを開く (Ctrl+O)"
+                    >
+                        <span className="btn-icon">📁</span>
+                        <span>ファイルを開く</span>
+                    </button>
+                )}
+                {onSavePdf && (
+                    <button 
+                        type="button"
                         className="tool-btn-save"
                         onClick={(e) => { e.stopPropagation(); onSavePdf(); }}
                         disabled={isSaving}
@@ -262,8 +274,8 @@ export function AnnotationToolbar({ onSavePdf, isSaving }) {
                         <span className="btn-icon">💾</span>
                         <span>{isSaving ? '保存中...' : 'PDFを保存 (DL)'}</span>
                     </button>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }

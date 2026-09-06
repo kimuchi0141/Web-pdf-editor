@@ -161,6 +161,13 @@ export function AnnotationProvider({ children }) {
         setTextHighlights(prev => prev.filter(h => h.id !== id));
     }, []);
 
+    // 新しいPDF読み込み時に全注釈・選択状態をリセット
+    const resetAllAnnotations = useCallback(() => {
+        setAnnotations([]);
+        setTextHighlights([]);
+        setSelectedId(null);
+    }, []);
+
     return (
         <AnnotationContext.Provider value={{
             currentTool,
@@ -180,6 +187,7 @@ export function AnnotationProvider({ children }) {
             textHighlights,
             addTextHighlight,
             deleteTextHighlight,
+            resetAllAnnotations,
             clearSelection,
             textProperties,
             setTextProperties,

@@ -304,6 +304,7 @@ function PdfViewer() {
         textHighlights, 
         addTextHighlight, 
         deleteTextHighlight,
+        resetAllAnnotations,
         setCurrentPage: setContextCurrentPage
     } = useContext(AnnotationContext);
 
@@ -314,6 +315,9 @@ function PdfViewer() {
     const [isPrinting, setIsPrinting] = useState(false);
     const [previewBlobUrl, setPreviewBlobUrl] = useState(null);
     const [toastMessage, setToastMessage] = useState(null);
+    const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+    const fileInputRef = useRef(null);
 
     // 元のクリーンなPDFバイナリバッファへの参照（編集埋め込み・保存用）
     const cleanBasePdfBytesRef = useRef(null);
@@ -566,30 +570,110 @@ function PdfViewer() {
         };
     }, []);
 
-    // ドラッグ＆ドロップによるPDF読み込みのサポート
-    // Bug-7修正: 新しいPDF読み込み時に以前のBlob URLを解放
-    const handleDragOver = useCallback((e) => {
-        e.preventDefault();
-        e.stopPropagation();
+    // ファイルを開くダイアログの起動
+    const handleTriggerOpenFile = useCallback(() => {
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+            fileInputRef.current.click();
+        }
     }, []);
 
-    const handleDrop = useCallback(async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const files = e.dataTransfer?.files;
-        if (files && files.length > 0 && files[0].type === 'application/pdf') {
-            const file = files[0];
+    // 任意のPDFファイル（Fileオブジェクト）を読み込み、状態を安全に切り替える共通処理
+    const handleLoadPdfFile = useCallback(async (file) => {
+        if (!file) return;
+        try {
+            setIsLoading(true);
             const buffer = await file.arrayBuffer();
-            cleanBasePdfBytesRef.current = new Uint8Array(buffer);
-            const newUrl = URL.createObjectURL(file);
+            const bytes = new Uint8Array(buffer);
+            cleanBasePdfBytesRef.current = bytes;
+
+            const newUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
             setPdfUrl(prevUrl => {
                 if (prevUrl) {
                     URL.revokeObjectURL(prevUrl);
                 }
                 return newUrl;
             });
+
+            // 新しいPDFの読み込みに合わせて前ドキュメントのアノテーション・しおり・ページ番号を初期化
+            resetAllAnnotations?.();
+            setBookmarks([]);
+            setCurrentPage(0);
+            setContextCurrentPage?.(0);
+            setIsLoading(false);
+
+            setToastMessage(`✓ PDFファイル「${file.name}」を開きました`);
+            setTimeout(() => setToastMessage(null), 3000);
+        } catch (err) {
+            console.error('Failed to load PDF file:', err);
+            setIsLoading(false);
+            alert('PDFファイルの読み込みに失敗しました: ' + err.message);
         }
-    }, []);
+    }, [resetAllAnnotations, setContextCurrentPage]);
+
+    const handleFileInputChange = useCallback((e) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            handleLoadPdfFile(files[0]);
+        }
+    }, [handleLoadPdfFile]);
+
+    // Ctrl+O / Cmd+O ショートカットでファイルを開くダイアログを起動
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'o' || e.key === 'O')) {
+                e.preventDefault();
+                handleTriggerOpenFile();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [handleTriggerOpenFile]);
+
+    // ウィンドウ全体での安全かつ確実なドラッグ＆ドロップ対応（拡張子・MIME両対応）
+    useEffect(() => {
+        const handleWindowDragOver = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDraggingOver(true);
+        };
+
+        const handleWindowDragLeave = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.relatedTarget === null || e.clientX <= 0 || e.clientY <= 0) {
+                setIsDraggingOver(false);
+            }
+        };
+
+        const handleWindowDrop = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDraggingOver(false);
+
+            const files = e.dataTransfer?.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                const isPdf = file.name.toLowerCase().endsWith('.pdf') || 
+                              file.type === 'application/pdf' || 
+                              file.type === 'application/x-pdf';
+                if (isPdf) {
+                    await handleLoadPdfFile(file);
+                } else {
+                    alert('選択されたファイルはPDF形式ではありません。PDFファイルを選択してください。');
+                }
+            }
+        };
+
+        window.addEventListener('dragover', handleWindowDragOver);
+        window.addEventListener('dragleave', handleWindowDragLeave);
+        window.addEventListener('drop', handleWindowDrop);
+        return () => {
+            window.removeEventListener('dragover', handleWindowDragOver);
+            window.removeEventListener('dragleave', handleWindowDragLeave);
+            window.removeEventListener('drop', handleWindowDrop);
+        };
+    }, [handleLoadPdfFile]);
 
     // ハイライト・手書きペン・テキスト・しおりを高解像度（4x / 300dpi相当）のままPDFに埋め込んで保存＆ダウンロード
     const handleSavePdf = useCallback(async () => {
@@ -718,12 +802,55 @@ function PdfViewer() {
             onDeleteBookmark: handleDeleteBookmark,
             onJumpToPage: handleJumpToPage
         }}>
-            <div 
-                className="app-container"
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-            >
-                <AnnotationToolbar onSavePdf={handleSavePdf} isSaving={isSaving} />
+            <div className="app-container">
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    accept=".pdf,application/pdf,application/x-pdf" 
+                    style={{ display: 'none' }} 
+                    onChange={handleFileInputChange} 
+                />
+
+                <AnnotationToolbar 
+                    onSavePdf={handleSavePdf} 
+                    isSaving={isSaving} 
+                    onOpenFile={handleTriggerOpenFile} 
+                />
+
+                {/* ドラッグ＆ドロップ時の視覚的ガイドオーバーレイ */}
+                {isDraggingOver && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(37, 99, 235, 0.18)',
+                        border: '3px dashed #2563eb',
+                        zIndex: 99999,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        pointerEvents: 'none',
+                        backdropFilter: 'blur(2px)'
+                    }}>
+                        <div style={{
+                            background: '#ffffff',
+                            padding: '24px 40px',
+                            borderRadius: '12px',
+                            boxShadow: '0 12px 36px rgba(0,0,0,0.2)',
+                            fontSize: '17px',
+                            fontWeight: 700,
+                            color: '#1d4ed8',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px'
+                        }}>
+                            <span style={{ fontSize: '32px' }}>📂</span>
+                            <span>ここにPDFファイルをドロップして開く</span>
+                        </div>
+                    </div>
+                )}
 
                 {toastMessage && (
                     <div style={{
@@ -754,6 +881,16 @@ function PdfViewer() {
                             plugins={[defaultLayoutPluginInstance, jumpPlugin, annotationPluginInstance, highlightPluginInstance]}
                             characterMap={CHARACTER_MAP}
                             localization={ja_JP}
+                            onDocumentLoad={async (e) => {
+                                try {
+                                    const bytes = await e.doc.getData();
+                                    if (bytes && bytes.length > 0) {
+                                        cleanBasePdfBytesRef.current = bytes;
+                                    }
+                                } catch (err) {
+                                    console.warn('Could not extract PDF bytes from loaded document', err);
+                                }
+                            }}
                             onPageChange={(e) => {
                                 setCurrentPage(e.currentPage);
                                 setContextCurrentPage?.(e.currentPage);
