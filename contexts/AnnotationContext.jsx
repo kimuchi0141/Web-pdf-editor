@@ -125,12 +125,12 @@ export function AnnotationProvider({ children }) {
         const trimmed = (text !== undefined && text !== null ? String(text) : '').trim();
         setAnnotations(prev => {
             if (!trimmed) {
-                return prev.filter(a => a.id !== id);
+                return prev.filter(a => String(a.id) !== String(id));
             }
-            return prev.map(a => a.id === id ? { ...a, text: trimmed, isEditing: false } : a);
+            return prev.map(a => String(a.id) === String(id) ? { ...a, text: trimmed, isEditing: false } : a);
         });
-        // 確定後も選択状態を維持（ドラッグ移動やプロパティ変更を可能にする）
-        setSelectedId(id);
+        // 確定後も選択状態を維持（空で削除された場合は選択解除）
+        setSelectedId(prev => (trimmed ? id : (String(prev) === String(id) ? null : prev)));
     }, []);
 
     const addAnnotation = useCallback((annotation) => {
@@ -138,19 +138,19 @@ export function AnnotationProvider({ children }) {
     }, []);
 
     const updateAnnotation = useCallback((id, updates) => {
-        setAnnotations(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
+        setAnnotations(prev => prev.map(a => String(a.id) === String(id) ? { ...a, ...updates } : a));
     }, []);
 
     const deleteAnnotation = useCallback((id) => {
-        setAnnotations(prev => prev.filter(a => a.id !== id));
-        setSelectedId(prev => (prev === id ? null : prev));
+        setAnnotations(prev => prev.filter(a => String(a.id) !== String(id)));
+        setSelectedId(prev => (String(prev) === String(id) ? null : prev));
     }, []);
 
     const deleteAnnotations = useCallback((ids) => {
         if (!ids || ids.length === 0) return;
-        const idSet = new Set(ids);
-        setAnnotations(prev => prev.filter(a => !idSet.has(a.id)));
-        setSelectedId(prev => (idSet.has(prev) ? null : prev));
+        const idSet = new Set(ids.map(i => String(i)));
+        setAnnotations(prev => prev.filter(a => !idSet.has(String(a.id))));
+        setSelectedId(prev => (idSet.has(String(prev)) ? null : prev));
     }, []);
 
     const addTextHighlight = useCallback((hl) => {

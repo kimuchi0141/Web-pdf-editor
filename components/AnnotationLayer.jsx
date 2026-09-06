@@ -242,7 +242,7 @@ export function AnnotationLayer({ pageIndex, scale, rotation }) {
                     annotation={ann} 
                     scale={scale}
                     currentTool={currentTool}
-                    isSelected={selectedId === ann.id}
+                    isSelected={String(selectedId) === String(ann.id)}
                     onSelect={() => setSelectedId(ann.id)}
                     onUpdate={(updates) => updateAnnotation(ann.id, updates)}
                     onCommit={(text) => commitTextAnnotation(ann.id, text)}
@@ -290,10 +290,18 @@ function AnnotationText({
 }) {
     const isEditing = Boolean(annotation.isEditing);
     const [textValue, setTextValue] = useState(annotation.text || '');
+    const textValueRef = useRef(annotation.text || '');
     const inputRef = useRef(null);
     const isComposingRef = useRef(false);
-    // Bug-10修正: ドラッグリスナーの参照を保持し、アンマウント時に確実にクリーンアップ
+    const isCommittingRef = useRef(false);
+    const lastCommitTimeRef = useRef(0);
+    // ドラッグリスナーの参照を保持し、アンマウント時に確実にクリーンアップ
     const dragListenersRef = useRef(null);
+
+    // テキスト値の同期
+    useEffect(() => {
+        textValueRef.current = textValue;
+    }, [textValue]);
 
     // アンマウント時にドラッグリスナーをクリーンアップ
     useEffect(() => {
@@ -308,41 +316,90 @@ function AnnotationText({
 
     // 編集モードになったら自動フォーカス
     useEffect(() => {
-        if (isEditing && inputRef.current) {
-            inputRef.current.focus();
-            inputRef.current.select();
+        if (isEditing) {
+            isCommittingRef.current = false;
+            const timer = setTimeout(() => {
+                if (inputRef.current) {
+                    inputRef.current.focus();
+                    inputRef.current.select();
+                }
+            }, 10);
+            return () => clearTimeout(timer);
         }
     }, [isEditing]);
 
-    // 外部からのテキスト更新を同期
+    // 外部からのテキスト更新を同期（編集中以外）
     useEffect(() => {
-        setTextValue(annotation.text || '');
-    }, [annotation.text]);
+        if (!isEditing) {
+            setTextValue(annotation.text || '');
+            textValueRef.current = annotation.text || '';
+        }
+    }, [annotation.text, isEditing]);
 
-    // 確定処理：入力されたテキストで確定し、反映状態に切り替える
-    const handleConfirm = useCallback(() => {
-        onCommit(textValue);
-    }, [textValue, onCommit]);
+    // 確定処理：入力されたテキストで確定し、反映状態に切り替える（冪等・即時反映）
+    const handleConfirm = useCallback((overrideText) => {
+        if (isCommittingRef.current) return;
+        isCommittingRef.current = true;
+        lastCommitTimeRef.current = Date.now();
+
+        let finalVal;
+        if (typeof overrideText === 'string') {
+            finalVal = overrideText;
+        } else if (inputRef.current && typeof inputRef.current.value === 'string') {
+            finalVal = inputRef.current.value;
+        } else {
+            finalVal = textValueRef.current;
+        }
+
+        isComposingRef.current = false;
+        onCommit(finalVal);
+
+        if (inputRef.current) {
+            inputRef.current.blur();
+        }
+    }, [onCommit]);
 
     // フォーカスが外れた場合（blur）も自動確定
     const handleBlur = (e) => {
+        // 「完了」ボタンや削除ボタンをクリックした時のblurはボタンのハンドラで処理するためスキップ
         if (e.relatedTarget && e.relatedTarget.closest('.ann-text-actions')) {
             return;
         }
-        handleConfirm();
+        if (!isCommittingRef.current) {
+            const currentVal = inputRef.current ? inputRef.current.value : textValueRef.current;
+            handleConfirm(currentVal);
+        }
     };
 
     // キー入力処理
     const handleKeyDown = (e) => {
-        // 日本語IMEの変換中（文字変換確定のEnter）はコミットしない
-        if (isComposingRef.current || e.nativeEvent?.isComposing) {
+        // 日本語IMEの変換中（文字変換確定のEnter）は確定させずIMEに委ねる
+        if (isComposingRef.current || e.nativeEvent?.isComposing || e.keyCode === 229) {
             return;
         }
-        if (e.key === 'Enter' || e.key === 'Escape') {
+        if (e.key === 'Enter') {
             e.preventDefault();
-            // Bug-2修正: blur()のみ呼ぶ。blurイベントがhandleBlur→handleConfirmを呼ぶため、
-            // ここでhandleConfirmを直接呼ぶと二重コミットになる
-            inputRef.current?.blur();
+            e.stopPropagation();
+            const currentVal = inputRef.current ? inputRef.current.value : textValueRef.current;
+            handleConfirm(currentVal);
+            return;
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            const currentVal = inputRef.current ? inputRef.current.value : textValueRef.current;
+            handleConfirm(currentVal);
+            return;
+        }
+    };
+
+    // 日本語IME変換完了ハンドラ
+    const handleCompositionEnd = (e) => {
+        isComposingRef.current = false;
+        if (e.target && typeof e.target.value === 'string') {
+            textValueRef.current = e.target.value;
+            setTextValue(e.target.value);
+            onUpdate({ text: e.target.value });
         }
     };
 
@@ -410,6 +467,8 @@ function AnnotationText({
             onPointerDown={handlePointerDown}
             onDoubleClick={(e) => {
                 e.stopPropagation();
+                // 確定直後（300ms以内）の誤ダブルクリックによる編集モード再突入を防止
+                if (Date.now() - lastCommitTimeRef.current < 300) return;
                 onUpdate({ isEditing: true });
             }}
         >
@@ -418,16 +477,28 @@ function AnnotationText({
                     {/* 入力中の確定・削除アクションバー */}
                     <div 
                         className="ann-text-actions"
-                        onMouseDown={(e) => e.preventDefault()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }}
+                        onDoubleClick={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button 
                             type="button"
                             className="ann-btn-confirm"
-                            onClick={(e) => {
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => {
+                                e.preventDefault();
                                 e.stopPropagation();
-                                inputRef.current?.blur();
-                                handleConfirm();
+                            }}
+                            onDoubleClick={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const currentVal = inputRef.current ? inputRef.current.value : textValueRef.current;
+                                handleConfirm(currentVal);
                             }}
                             title="テキストを確定して反映 (Enter)"
                         >
@@ -436,7 +507,14 @@ function AnnotationText({
                         <button 
                             type="button"
                             className="ann-btn-delete"
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
+                            onDoubleClick={(e) => e.stopPropagation()}
                             onClick={(e) => {
+                                e.preventDefault();
                                 e.stopPropagation();
                                 onDelete();
                             }}
@@ -454,10 +532,11 @@ function AnnotationText({
                         placeholder="テキストを入力"
                         onChange={(e) => {
                             setTextValue(e.target.value);
+                            textValueRef.current = e.target.value;
                             onUpdate({ text: e.target.value });
                         }}
                         onCompositionStart={() => { isComposingRef.current = true; }}
-                        onCompositionEnd={() => { isComposingRef.current = false; }}
+                        onCompositionEnd={handleCompositionEnd}
                         onBlur={handleBlur}
                         onKeyDown={handleKeyDown}
                         style={{
@@ -474,12 +553,16 @@ function AnnotationText({
                     {isSelected && (
                         <div 
                             className="ann-text-actions"
+                            onPointerDown={(e) => e.stopPropagation()}
                             onMouseDown={(e) => e.stopPropagation()}
+                            onDoubleClick={(e) => e.stopPropagation()}
                             onClick={(e) => e.stopPropagation()}
                         >
                             <button 
                                 type="button"
                                 className="ann-btn-edit"
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onDoubleClick={(e) => e.stopPropagation()}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onUpdate({ isEditing: true });
@@ -491,6 +574,8 @@ function AnnotationText({
                             <button 
                                 type="button"
                                 className="ann-btn-delete"
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onDoubleClick={(e) => e.stopPropagation()}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onDelete();
