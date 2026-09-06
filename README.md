@@ -4,6 +4,10 @@ React 18、PDF.js、および pdf-lib をベースにした、高機能かつ軽
 
 ローカル環境やサーバーサイドへのデータ送信を行わず、ブラウザ内のみで高速かつセキュアにPDFの閲覧・注釈追加・しおり管理・変更後の高解像度保存・印刷が完結します。
 
+<p align="center">
+  <img src="docs/images/screenshot.png" alt="Web PDF Editor & Viewer UI Screenshot" width="100%" />
+</p>
+
 ---
 
 ## 🌟 主な機能
