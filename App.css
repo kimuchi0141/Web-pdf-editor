@@ -154,6 +154,24 @@
   padding-top: 8px;
 }
 
+/* しおりが1件以上ある場合、「しおりはありません」メッセージを非表示にする */
+.custom-bookmark-tab.has-bookmarks .rpv-bookmark__empty {
+  display: none !important;
+}
+
+.custom-bookmark-tab.has-bookmarks .default-bookmark-wrapper {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
+}
+
+/* PDF文書自身に本来のアウトライン/しおりが含まれる場合のみ下部に境界線付きで表示 */
+.custom-bookmark-tab.has-bookmarks .default-bookmark-wrapper:has(.rpv-bookmark__container) {
+  margin-top: 8px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 8px;
+}
+
 .bookmark-empty {
   padding: 16px 12px;
   color: #94a3b8;

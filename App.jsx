@@ -245,9 +245,10 @@ async function generateSamplePdf() {
 // しおりサイドバーのコンテンツコンポーネント（Context経由で最新状態を取得）
 function BookmarkTabContent({ defaultBookmarkContent }) {
     const { bookmarks, onAddBookmark, onDeleteBookmark, onJumpToPage } = useContext(BookmarkContext);
+    const hasBookmarks = Boolean(bookmarks && bookmarks.length > 0);
 
     return (
-        <div className="custom-bookmark-tab">
+        <div className={`custom-bookmark-tab ${hasBookmarks ? 'has-bookmarks' : ''}`}>
             <button className="bookmark-add-btn" onClick={onAddBookmark} title="現在のページをしおりに追加">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="12" y1="5" x2="12" y2="19" />
@@ -256,7 +257,7 @@ function BookmarkTabContent({ defaultBookmarkContent }) {
                 <span>現在のページをしおりに追加</span>
             </button>
 
-            {bookmarks && bookmarks.length > 0 ? (
+            {hasBookmarks ? (
                 <ul className="bookmark-list">
                     {bookmarks.map((bm) => (
                         <li 
@@ -346,6 +347,47 @@ function PdfViewer() {
             sessionStorage.setItem('pdf_bookmarks', JSON.stringify(bookmarks));
         } catch (e) {}
     }, [bookmarks]);
+
+    // 未保存の変更状態の追跡（ブラウザ再読み込み時の離脱防止用）
+    const lastSavedSnapshotRef = useRef(null);
+    const hasUnsavedChangesRef = useRef(false);
+
+    // 初期ドキュメント読み込み完了時に初期スナップショットを記録
+    useEffect(() => {
+        if (!isLoading && pdfUrl && lastSavedSnapshotRef.current === null) {
+            lastSavedSnapshotRef.current = JSON.stringify({
+                annotations,
+                textHighlights,
+                bookmarks
+            });
+        }
+    }, [isLoading, pdfUrl, annotations, textHighlights, bookmarks]);
+
+    // 編集内容が初期/保存時点から変化しているかを判定
+    useEffect(() => {
+        if (lastSavedSnapshotRef.current !== null) {
+            const currentSnapshot = JSON.stringify({
+                annotations,
+                textHighlights,
+                bookmarks
+            });
+            hasUnsavedChangesRef.current = currentSnapshot !== lastSavedSnapshotRef.current;
+        }
+    }, [annotations, textHighlights, bookmarks]);
+
+    // ブラウザの再読み込み・タブ閉じ時に未保存の変更がある場合はブラウザ標準の確認ダイアログを表示
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (hasUnsavedChangesRef.current) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, []);
 
     // しおりの追加
     const handleAddBookmark = useCallback(() => {
@@ -602,6 +644,14 @@ function PdfViewer() {
             setContextCurrentPage?.(0);
             setIsLoading(false);
 
+            // 新しいPDF読み込み時は未編集状態としてスナップショットを初期化
+            lastSavedSnapshotRef.current = JSON.stringify({
+                annotations: [],
+                textHighlights: [],
+                bookmarks: []
+            });
+            hasUnsavedChangesRef.current = false;
+
             setToastMessage(`✓ PDFファイル「${file.name}」を開きました`);
             setTimeout(() => setToastMessage(null), 3000);
         } catch (err) {
@@ -713,6 +763,14 @@ function PdfViewer() {
             document.body.removeChild(a);
             // Bug-6修正: ダウンロード完了後にBlob URLを確実に解放してメモリリークを防止
             setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+
+            // 保存成功時にスナップショットを更新して未保存フラグをリセット
+            lastSavedSnapshotRef.current = JSON.stringify({
+                annotations,
+                textHighlights,
+                bookmarks
+            });
+            hasUnsavedChangesRef.current = false;
 
             setToastMessage('✓ 高解像度（300dpi相当）の状態でPDFを保存・ダウンロードしました');
             setTimeout(() => setToastMessage(null), 3500);
