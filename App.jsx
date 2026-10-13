@@ -26,6 +26,26 @@ const CHARACTER_MAP = {
     url: 'https://unpkg.com/pdfjs-dist@3.11.174/cmaps/'
 };
 
+const getPdfRenderOverscanPages = () => {
+    const deviceMemory = navigator.deviceMemory;
+
+    if (typeof deviceMemory !== 'number') {
+        return 3;
+    }
+
+    if (deviceMemory <= 2) {
+        return 0;
+    }
+    return deviceMemory <= 4 ? 1 : 3;
+};
+
+const PDF_RENDER_OVERSCAN_PAGES = getPdfRenderOverscanPages();
+
+const getPdfRenderRange = ({ startPage, endPage, numPages }) => ({
+    startPage: Math.max(0, startPage - PDF_RENDER_OVERSCAN_PAGES),
+    endPage: Math.min(numPages - 1, endPage + PDF_RENDER_OVERSCAN_PAGES)
+});
+
 // しおりのコンテキスト
 const BookmarkContext = React.createContext({
     bookmarks: [],
@@ -935,6 +955,7 @@ function PdfViewer() {
                         <Viewer
                             fileUrl={pdfUrl}
                             plugins={[defaultLayoutPluginInstance, jumpPlugin, annotationPluginInstance, highlightPluginInstance]}
+                            setRenderRange={getPdfRenderRange}
                             characterMap={CHARACTER_MAP}
                             localization={ja_JP}
                             onDocumentLoad={async (e) => {
