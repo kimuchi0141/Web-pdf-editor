@@ -16,8 +16,7 @@ import { AnnotationProvider, AnnotationContext } from './contexts/AnnotationCont
 import { AnnotationToolbar } from './components/AnnotationToolbar';
 import { annotationPlugin } from './plugins/annotationPlugin';
 import { exportPdfWithAllEdits } from './services/pdfEditor';
-import { createEditedPdfBlobUrl } from './services/nativePdfPrinter';
-import { PrintPreviewModal } from './components/PrintPreviewModal';
+import { printPdfDirectNative } from './services/nativePdfPrinter';
 
 // ローカルに配信される安全かつ高速なPDF.js Worker
 const WORKER_URL = '/pdf.worker.min.js';
@@ -250,9 +249,8 @@ function BookmarkTabContent({ defaultBookmarkContent }) {
     return (
         <div className={`custom-bookmark-tab ${hasBookmarks ? 'has-bookmarks' : ''}`}>
             <button className="bookmark-add-btn" onClick={onAddBookmark} title="現在のページをしおりに追加">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
                 </svg>
                 <span>現在のページをしおりに追加</span>
             </button>
@@ -275,8 +273,11 @@ function BookmarkTabContent({ defaultBookmarkContent }) {
                                     onDeleteBookmark(bm.id);
                                 }}
                                 title="しおりを削除"
+                                aria-label="しおりを削除"
                             >
-                                ✕
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
                             </button>
                         </li>
                     ))}
@@ -313,8 +314,6 @@ function PdfViewer() {
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
     const [isSaving, setIsSaving] = useState(false);
-    const [isPrinting, setIsPrinting] = useState(false);
-    const [previewBlobUrl, setPreviewBlobUrl] = useState(null);
     const [toastMessage, setToastMessage] = useState(null);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
 
@@ -455,18 +454,18 @@ function PdfViewer() {
                     transform: 'translate(-50%, -100%)',
                     zIndex: 100,
                     background: '#ffffff',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-                    borderRadius: '8px',
-                    padding: '5px 8px',
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08)',
+                    borderRadius: '20px',
+                    padding: '5px 12px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '5px',
-                    border: '1px solid #cbd5e1'
+                    gap: '6px',
+                    border: '1px solid #e1e3e1'
                 }}
             >
-                <span style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginRight: '2px' }}>ハイライト:</span>
+                <span style={{ fontSize: '11.5px', fontWeight: 500, color: '#444746', marginRight: '2px' }}>ハイライト:</span>
                 <button
-                    style={{ background: '#fef08a', border: '1px solid #eab308', borderRadius: '4px', padding: '3px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#854d0e' }}
+                    style={{ background: '#fff9c4', border: '1px solid #fbc02d', borderRadius: '12px', padding: '3px 10px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 600, color: '#7c5800', transition: 'transform 0.1s ease' }}
                     onClick={() => {
                         addTextHighlightRef.current({
                             id: Date.now(),
@@ -482,7 +481,7 @@ function PdfViewer() {
                     黄
                 </button>
                 <button
-                    style={{ background: '#bbf7d0', border: '1px solid #22c55e', borderRadius: '4px', padding: '3px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#166534' }}
+                    style={{ background: '#c8f5d0', border: '1px solid #34a853', borderRadius: '12px', padding: '3px 10px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 600, color: '#0d652d', transition: 'transform 0.1s ease' }}
                     onClick={() => {
                         addTextHighlightRef.current({
                             id: Date.now(),
@@ -498,7 +497,7 @@ function PdfViewer() {
                     緑
                 </button>
                 <button
-                    style={{ background: '#bfdbfe', border: '1px solid #3b82f6', borderRadius: '4px', padding: '3px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#1e40af' }}
+                    style={{ background: '#d3e3fd', border: '1px solid #0b57d0', borderRadius: '12px', padding: '3px 10px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 600, color: '#041e49', transition: 'transform 0.1s ease' }}
                     onClick={() => {
                         addTextHighlightRef.current({
                             id: Date.now(),
@@ -514,7 +513,7 @@ function PdfViewer() {
                     青
                 </button>
                 <button
-                    style={{ background: '#fbcfe8', border: '1px solid #ec4899', borderRadius: '4px', padding: '3px 8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#9d174d' }}
+                    style={{ background: '#ffd8e4', border: '1px solid #e91e63', borderRadius: '12px', padding: '3px 10px', cursor: 'pointer', fontSize: '11.5px', fontWeight: 600, color: '#881144', transition: 'transform 0.1s ease' }}
                     onClick={() => {
                         addTextHighlightRef.current({
                             id: Date.now(),
@@ -782,13 +781,11 @@ function PdfViewer() {
         }
     }, [annotations, textHighlights, bookmarks, pdfUrl]);
 
-    // 書き込み・テキスト注釈が反映された変更後PDFを生成し、ネイティブ印刷プレビューモーダルを表示
-    // Bug-5修正: 依存配列からisPrintingを除去し、isPrintingRefとfinallyクリーンアップで多重実行および再生成ループを防止
+    // 編集内容を反映したPDFを生成し、ブラウザー標準の印刷プレビューを開く
     const isPrintingRef = useRef(false);
     const handlePrintPdf = useCallback(async () => {
         if (isPrintingRef.current) return;
         isPrintingRef.current = true;
-        setIsPrinting(true);
         try {
             let sourceBuffer = cleanBasePdfBytesRef.current;
             if (!sourceBuffer && pdfUrl) {
@@ -801,20 +798,17 @@ function PdfViewer() {
                 throw new Error('PDFデータを読み込み中です。少々お待ちください。');
             }
 
-            // PDF.jsを使わず、ブラウザのネイティブPDFエンジンを活用して変更後PDFを表示！
-            const blobUrl = await createEditedPdfBlobUrl({
+            await printPdfDirectNative({
                 originalPdfBuffer: sourceBuffer,
                 annotations,
                 textHighlights,
                 bookmarks
             });
-
-            setPreviewBlobUrl(blobUrl);
         } catch (err) {
             console.error('PDF Print error:', err);
+            alert('PDFの印刷プレビューを開けませんでした: ' + err.message);
         } finally {
             isPrintingRef.current = false;
-            setIsPrinting(false);
         }
     }, [annotations, textHighlights, bookmarks, pdfUrl]);
 
@@ -875,7 +869,7 @@ function PdfViewer() {
                     onOpenFile={handleTriggerOpenFile} 
                 />
 
-                {/* ドラッグ＆ドロップ時の視覚的ガイドオーバーレイ */}
+                {/* ドラッグ＆ドロップ時の視覚的ガイドオーバーレイ (Material Design 3) */}
                 {isDraggingOver && (
                     <div style={{
                         position: 'fixed',
@@ -883,28 +877,31 @@ function PdfViewer() {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        backgroundColor: 'rgba(37, 99, 235, 0.18)',
-                        border: '3px dashed #2563eb',
+                        backgroundColor: 'rgba(211, 227, 253, 0.7)',
+                        border: '3px dashed #0b57d0',
                         zIndex: 99999,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         pointerEvents: 'none',
-                        backdropFilter: 'blur(2px)'
+                        backdropFilter: 'blur(6px)'
                     }}>
                         <div style={{
                             background: '#ffffff',
-                            padding: '24px 40px',
-                            borderRadius: '12px',
-                            boxShadow: '0 12px 36px rgba(0,0,0,0.2)',
-                            fontSize: '17px',
-                            fontWeight: 700,
-                            color: '#1d4ed8',
+                            padding: '36px 56px',
+                            borderRadius: '28px',
+                            boxShadow: '0 16px 40px rgba(11, 87, 208, 0.2), 0 2px 6px rgba(0, 0, 0, 0.06)',
+                            fontSize: '18px',
+                            fontWeight: 600,
+                            color: '#041e49',
                             display: 'flex',
+                            flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '12px'
+                            gap: '14px'
                         }}>
-                            <span style={{ fontSize: '32px' }}>📂</span>
+                            <svg width="52" height="52" viewBox="0 0 24 24" fill="#0b57d0">
+                                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                            </svg>
                             <span>ここにPDFファイルをドロップして開く</span>
                         </div>
                     </div>
@@ -913,20 +910,21 @@ function PdfViewer() {
                 {toastMessage && (
                     <div style={{
                         position: 'fixed',
-                        bottom: '24px',
+                        bottom: '28px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        background: '#0f172a',
-                        color: '#ffffff',
-                        padding: '10px 20px',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-                        fontSize: '13px',
-                        fontWeight: 600,
+                        background: '#1f1f1f',
+                        color: '#f2f2f2',
+                        padding: '12px 24px',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.15)',
+                        fontSize: '13.5px',
+                        fontWeight: 500,
                         zIndex: 10000,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px'
+                        gap: '10px',
+                        letterSpacing: '0.1px'
                     }}>
                         <span>{toastMessage}</span>
                     </div>
@@ -956,15 +954,6 @@ function PdfViewer() {
                         />
                     </Worker>
                 </div>
-                {previewBlobUrl && (
-                    <PrintPreviewModal 
-                        blobUrl={previewBlobUrl} 
-                        onClose={() => {
-                            URL.revokeObjectURL(previewBlobUrl);
-                            setPreviewBlobUrl(null);
-                        }} 
-                    />
-                )}
             </div>
         </BookmarkContext.Provider>
     );
@@ -979,4 +968,3 @@ export default function App() {
         </ErrorBoundary>
     );
 }
-

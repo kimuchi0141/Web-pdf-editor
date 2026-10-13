@@ -1,3 +1,7 @@
+/* ==========================================================================
+   AnnotationLayer.css - Material Design 3 Styling
+   ========================================================================== */
+
 .annotation-layer {
     position: absolute;
     top: 0;
@@ -18,119 +22,135 @@
 }
 
 /* ==========================================================================
-   Text Box Styles
+   Text Box Styles (Material Design 3)
    ========================================================================== */
 .ann-text-box {
     position: absolute;
     box-sizing: border-box;
-    border-radius: 4px;
+    border-radius: var(--md-sys-shape-corner-small, 8px);
     border: 1.5px solid transparent;
-    transition: background-color 0.1s ease, border-color 0.1s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     max-width: 90%;
     z-index: 55;
 }
 
 .ann-text-box.selected {
-    border: 1.5px dashed #2563eb;
-    background: rgba(37, 99, 235, 0.08);
+    border: 2px dashed var(--md-sys-color-primary, #0b57d0);
+    background: rgba(211, 227, 253, 0.25);
     cursor: move;
     z-index: 65;
 }
 
 .ann-text-box.editing {
-    border: 1.5px solid #2563eb;
-    background: #ffffff;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+    border: 2px solid var(--md-sys-color-primary, #0b57d0);
+    background: var(--md-sys-color-surface, #ffffff);
+    box-shadow: 0 4px 16px rgba(11, 87, 208, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);
     z-index: 75;
     cursor: text;
 }
 
+/* Floating Action Bar (M3 Pill Card) */
 .ann-text-actions {
     position: absolute;
-    bottom: calc(100% + 4px);
+    bottom: calc(100% + 6px);
     left: 0;
     display: flex;
     align-items: center;
-    gap: 4px;
-    background: #ffffff;
-    border: 1px solid #93c5fd;
-    border-radius: 6px;
-    padding: 3px 5px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    gap: 6px;
+    background: var(--md-sys-color-surface, #ffffff);
+    border: 1px solid var(--md-sys-color-outline-variant, #e1e3e1);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    padding: 4px 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
     z-index: 85;
     white-space: nowrap;
     user-select: none;
 }
 
+/* M3 Filled Button (Confirm) */
 .ann-btn-confirm {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    background: #2563eb;
-    color: #ffffff;
+    gap: 4px;
+    background: var(--md-sys-color-primary, #0b57d0);
+    color: var(--md-sys-color-on-primary, #ffffff);
     border: none;
-    border-radius: 4px;
-    padding: 3px 8px;
-    font-size: 11px;
-    font-weight: 600;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    padding: 4px 12px;
+    font-size: 11.5px;
+    font-weight: 500;
     cursor: pointer;
     line-height: 1.2;
-    transition: background-color 0.15s ease;
+    transition: background-color 0.15s ease, transform 0.05s ease;
 }
 
 .ann-btn-confirm:hover {
-    background: #1d4ed8;
+    background: #0842a0;
 }
 
+.ann-btn-confirm:active {
+    transform: scale(0.96);
+}
+
+/* M3 Tonal Button (Edit) */
 .ann-btn-edit {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    background: #2563eb;
-    color: #ffffff;
+    gap: 4px;
+    background: var(--md-sys-color-primary-container, #d3e3fd);
+    color: var(--md-sys-color-on-primary-container, #041e49);
     border: none;
-    border-radius: 4px;
-    padding: 3px 8px;
-    font-size: 11px;
-    font-weight: 600;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    padding: 4px 12px;
+    font-size: 11.5px;
+    font-weight: 500;
     cursor: pointer;
     line-height: 1.2;
-    transition: background-color 0.15s ease;
+    transition: background-color 0.15s ease, transform 0.05s ease;
 }
 
 .ann-btn-edit:hover {
-    background: #1d4ed8;
+    background: #c2d7fc;
 }
 
+.ann-btn-edit:active {
+    transform: scale(0.96);
+}
+
+/* M3 Error Button (Delete) */
 .ann-btn-delete {
     display: inline-flex;
     align-items: center;
-    background: #f1f5f9;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
-    padding: 3px 6px;
-    font-size: 11px;
+    gap: 3px;
+    background: var(--md-sys-color-error-container, #ffdad6);
+    color: var(--md-sys-color-error, #ba1a1a);
+    border: none;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    padding: 4px 10px;
+    font-size: 11.5px;
+    font-weight: 500;
     cursor: pointer;
     line-height: 1.2;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, transform 0.05s ease;
 }
 
 .ann-btn-delete:hover {
-    background: #fee2e2;
-    color: #dc2626;
-    border-color: #fca5a5;
+    background: #ffb4ab;
+}
+
+.ann-btn-delete:active {
+    transform: scale(0.96);
 }
 
 .ann-text-content {
     display: inline-flex;
     align-items: center;
-    padding: 2px 6px;
+    padding: 4px 8px;
     white-space: pre-wrap;
     word-break: break-word;
-    line-height: 1.3;
+    line-height: 1.4;
     font-weight: 500;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    font-family: 'Roboto', 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
 }
 
 .ann-text-input {
@@ -138,14 +158,15 @@
     background: transparent;
     border: none;
     outline: none;
-    padding: 2px 6px;
+    padding: 4px 8px;
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    font-family: 'Roboto', 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 1.4;
     min-width: 140px;
     box-sizing: border-box;
     user-select: text;
+    color: inherit;
 }
 
 .ann-text-textarea {
@@ -159,12 +180,12 @@
     position: absolute;
     top: -8px;
     right: -8px;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background-color: #2563eb;
+    background-color: var(--md-sys-color-primary, #0b57d0);
     color: #ffffff;
-    font-size: 10px;
+    font-size: 11px;
     display: flex;
     align-items: center;
     justify-content: center;

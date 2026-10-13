@@ -1,5 +1,5 @@
 /* ==========================================================================
-   App.css - Clean container styling for @react-pdf-viewer/default-layout
+   App.css - Material Design 3 container and component styles
    ========================================================================== */
 
 #root, .app-container {
@@ -10,7 +10,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background-color: #525659;
+  background-color: var(--md-sys-color-viewer-bg, #f1f3f4);
 }
 
 .viewer-wrapper {
@@ -19,8 +19,10 @@
   width: 100%;
   overflow: hidden;
   position: relative;
+  background-color: var(--md-sys-color-viewer-bg, #f1f3f4);
 }
 
+/* Material 3 Loading Screen */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -28,19 +30,20 @@
   justify-content: center;
   height: 100vh;
   width: 100vw;
-  background-color: #323639;
-  color: #f1f1f1;
-  gap: 12px;
+  background-color: var(--md-sys-color-surface-container-low, #f8fafd);
+  color: var(--md-sys-color-on-surface, #1f1f1f);
+  gap: 16px;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  border-top-color: #3880ff;
+  width: 36px;
+  height: 36px;
+  border: 3.5px solid var(--md-sys-color-primary-container, #d3e3fd);
+  border-top-color: var(--md-sys-color-primary, #0b57d0);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @keyframes spin {
@@ -48,38 +51,48 @@
 }
 
 /* ==========================================================================
-   Custom Bookmark Sidebar Tab
+   Custom Bookmark Sidebar Tab (Material Design 3)
    ========================================================================== */
 .custom-bookmark-tab {
-  padding: 12px 8px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
+  background-color: var(--md-sys-color-surface, #ffffff);
 }
 
+/* M3 Filled Button for Adding Bookmark */
 .bookmark-add-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
-  padding: 8px 12px;
-  background-color: #0060df;
-  color: #ffffff;
+  height: 40px;
+  padding: 0 16px;
+  background-color: var(--md-sys-color-primary, #0b57d0);
+  color: var(--md-sys-color-on-primary, #ffffff);
   border: none;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  margin-bottom: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.15s ease;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(11, 87, 208, 0.3);
+  transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1), 
+              box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1),
+              transform 0.05s ease;
 }
 
 .bookmark-add-btn:hover {
-  background-color: #004ecc;
+  background-color: #0842a0;
+  box-shadow: 0 2px 6px rgba(11, 87, 208, 0.4);
+}
+
+.bookmark-add-btn:active {
+  transform: scale(0.98);
 }
 
 .bookmark-list {
@@ -88,26 +101,29 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
+/* M3 Elevated Card for Bookmark Item */
 .bookmark-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
-  border-radius: 4px;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  font-size: 12px;
-  color: #1e293b;
+  padding: 10px 12px;
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+  background-color: var(--md-sys-color-surface, #ffffff);
+  border: 1px solid var(--md-sys-color-outline-variant, #e1e3e1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-size: 12.5px;
+  color: var(--md-sys-color-on-surface, #1f1f1f);
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .bookmark-item:hover {
-  background-color: #dbeafe;
-  border-color: #93c5fd;
+  background-color: var(--md-sys-color-surface-container, #f0f4f9);
+  border-color: var(--md-sys-color-primary, #0b57d0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .bookmark-title {
@@ -115,43 +131,49 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
-  color: #1e293b;
+  color: var(--md-sys-color-on-surface, #1f1f1f);
   font-weight: 500;
 }
 
+/* M3 Assist Chip for Page Badge */
 .bookmark-page-badge {
   font-size: 11px;
-  color: #2563eb;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 3px;
-  padding: 1px 5px;
-  margin: 0 6px;
+  color: var(--md-sys-color-primary, #0b57d0);
+  background: var(--md-sys-color-surface-container-high, #e9eef6);
+  border: none;
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+  padding: 3px 8px;
+  margin: 0 8px;
   flex-shrink: 0;
   font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
+/* M3 Icon Button for Delete */
 .bookmark-delete-btn {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--md-sys-color-outline, #747775);
   cursor: pointer;
-  padding: 2px 6px;
-  font-size: 12px;
-  border-radius: 3px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   flex-shrink: 0;
-  transition: all 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .bookmark-delete-btn:hover {
-  color: #ffffff;
-  background-color: #ef4444;
+  color: var(--md-sys-color-error, #ba1a1a);
+  background-color: var(--md-sys-color-error-container, #ffdad6);
 }
 
 .default-bookmark-wrapper {
-  margin-top: 8px;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 8px;
+  margin-top: 12px;
+  border-top: 1px solid var(--md-sys-color-outline-variant, #e1e3e1);
+  padding-top: 12px;
 }
 
 /* しおりが1件以上ある場合、「しおりはありません」メッセージを非表示にする */
@@ -167,14 +189,15 @@
 
 /* PDF文書自身に本来のアウトライン/しおりが含まれる場合のみ下部に境界線付きで表示 */
 .custom-bookmark-tab.has-bookmarks .default-bookmark-wrapper:has(.rpv-bookmark__container) {
-  margin-top: 8px;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 8px;
+  margin-top: 12px;
+  border-top: 1px solid var(--md-sys-color-outline-variant, #e1e3e1);
+  padding-top: 12px;
 }
 
 .bookmark-empty {
-  padding: 16px 12px;
-  color: #94a3b8;
-  font-size: 12px;
+  padding: 24px 12px;
+  color: var(--md-sys-color-on-surface-variant, #444746);
+  font-size: 12.5px;
+  line-height: 1.6;
   text-align: center;
 }

@@ -83,17 +83,33 @@ export async function printPdfDirectNative({
                     console.warn('Direct iframe print failed, falling back to window.open', err);
                     try {
                         const win = window.open(blobUrl, '_blank');
-                        if (win) {
-                            win.focus();
-                            win.print();
+                        if (!win) {
+                            throw new Error('ブラウザーが印刷用ウィンドウを開けませんでした');
                         }
-                    } catch (e) {
-                        console.error('Window open print also failed', e);
-                    }
-                    if (!resolved) {
-                        resolved = true;
+
+                        const printFromWindow = () => {
+                            try {
+                                win.focus();
+                                win.print();
+                                if (!resolved) {
+                                    resolved = true;
+                                    cleanup();
+                                    resolve(blobUrl);
+                                }
+                            } catch (printError) {
+                                cleanup();
+                                reject(printError);
+                            }
+                        };
+
+                        if (win.document.readyState === 'complete') {
+                            printFromWindow();
+                        } else {
+                            win.addEventListener('load', printFromWindow, { once: true });
+                        }
+                    } catch (fallbackError) {
                         cleanup();
-                        resolve(blobUrl);
+                        reject(new Error(`ブラウザー標準の印刷プレビューを開けませんでした: ${fallbackError.message}`));
                     }
                 }
             }, 500);

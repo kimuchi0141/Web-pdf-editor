@@ -1,10 +1,14 @@
+/* ==========================================================================
+   PrintPreviewModal.css - Material Design 3 Dialog Styling
+   ========================================================================== */
+
 .print-preview-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(15, 23, 42, 0.75);
+    background: rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(4px);
     z-index: 99999;
     display: flex;
@@ -12,7 +16,7 @@
     justify-content: center;
     padding: 24px;
     box-sizing: border-box;
-    animation: previewFadeIn 0.2s ease-out;
+    animation: previewFadeIn 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 @keyframes previewFadeIn {
@@ -20,46 +24,51 @@
     to { opacity: 1; }
 }
 
+/* M3 Dialog Container */
 .print-preview-dialog {
-    background: #ffffff;
+    background: var(--md-sys-color-surface, #ffffff);
     width: 92vw;
     max-width: 1100px;
     height: 90vh;
-    border-radius: 12px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.24), 0 8px 16px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: previewScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: previewScaleUp 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 @keyframes previewScaleUp {
-    from { transform: scale(0.97); }
-    to { transform: scale(1); }
+    from { transform: scale(0.95); opacity: 0.5; }
+    to { transform: scale(1); opacity: 1; }
 }
 
+/* Header */
 .print-preview-header {
-    height: 52px;
-    background: #1e293b;
-    color: #ffffff;
+    height: 60px;
+    background: var(--md-sys-color-surface, #ffffff);
+    color: var(--md-sys-color-on-surface, #1f1f1f);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 0 24px;
     flex-shrink: 0;
-    border-bottom: 1px solid #334155;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant, #e1e3e1);
 }
 
 .print-preview-title {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 15px;
-    font-weight: 600;
+    gap: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface, #1f1f1f);
 }
 
-.print-preview-icon {
-    font-size: 18px;
+.print-preview-title .m3-icon {
+    width: 22px;
+    height: 22px;
+    color: var(--md-sys-color-primary, #0b57d0);
 }
 
 .print-preview-actions {
@@ -68,71 +77,99 @@
     gap: 10px;
 }
 
+/* M3 Filled Button */
 .print-btn-primary {
-    background: #2563eb;
-    color: #ffffff;
+    background: var(--md-sys-color-primary, #0b57d0);
+    color: var(--md-sys-color-on-primary, #ffffff);
     border: none;
-    padding: 8px 18px;
-    border-radius: 6px;
+    padding: 0 20px;
+    height: 38px;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
-    transition: background 0.15s ease, transform 0.05s ease;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    gap: 8px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+    box-shadow: 0 1px 3px rgba(11, 87, 208, 0.3);
+}
+
+.print-btn-primary .m3-icon {
+    width: 18px;
+    height: 18px;
 }
 
 .print-btn-primary:hover {
-    background: #1d4ed8;
+    background: #0842a0;
+    box-shadow: 0 2px 6px rgba(11, 87, 208, 0.4);
 }
 
 .print-btn-primary:active {
     transform: scale(0.98);
 }
 
+/* M3 Outlined Button */
 .print-btn-secondary {
-    background: #334155;
-    color: #e2e8f0;
-    border: 1px solid #475569;
-    padding: 7px 14px;
-    border-radius: 6px;
-    font-size: 12.5px;
+    background: var(--md-sys-color-surface, #ffffff);
+    color: var(--md-sys-color-primary, #0b57d0);
+    border: 1px solid var(--md-sys-color-outline, #747775);
+    padding: 0 16px;
+    height: 38px;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.print-btn-secondary .m3-icon {
+    width: 16px;
+    height: 16px;
 }
 
 .print-btn-secondary:hover {
-    background: #475569;
-    color: #ffffff;
+    background: rgba(11, 87, 208, 0.08);
+    border-color: var(--md-sys-color-primary, #0b57d0);
 }
 
+.print-btn-secondary:active {
+    transform: scale(0.98);
+}
+
+/* M3 Icon Button */
 .print-btn-close {
     background: transparent;
     border: none;
-    color: #94a3b8;
-    font-size: 18px;
-    width: 32px;
-    height: 32px;
+    color: var(--md-sys-color-on-surface-variant, #444746);
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    border-radius: 6px;
-    transition: background 0.15s ease, color 0.15s ease;
-    margin-left: 4px;
+    border-radius: 50%;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    margin-left: 6px;
+}
+
+.print-btn-close .m3-icon {
+    width: 20px;
+    height: 20px;
 }
 
 .print-btn-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    background: var(--md-sys-color-surface-container-high, #e9eef6);
+    color: var(--md-sys-color-on-surface, #1f1f1f);
 }
 
+/* Body */
 .print-preview-body {
     flex: 1;
-    background: #525659;
+    background: var(--md-sys-color-viewer-bg, #f1f3f4);
     overflow: hidden;
     position: relative;
 }
